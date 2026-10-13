@@ -67,6 +67,12 @@ genlayer write <address> submit_claim --args "Abuja is the capital of Nigeria" "
 genlayer call  <address> get_verdict --args 0 0
 ```
 
+## Console (frontend)
+
+`frontend/index.html` is a single static page (genlayer-js from a CDN, OKX or MetaMask on Bradbury). It lists every claim with its verdict and per-source stances, submits new claims, posts challenges with the 0.1 GEN bond, and calls `refresh`. Its transaction tracker counts a call as successful only when it is ACCEPTED and GenVM returned `FINISHED_WITH_RETURN`, then keeps watching until FINALIZED.
+
+Live: https://kingkanzi0.github.io/corroborate/frontend/
+
 ## Tests
 
 ```
@@ -80,10 +86,21 @@ python3 tests/test_corroborate.py
 - Sources on different domains are not guaranteed to be independent (one site may copy another). Consumers that need more can require claims with three sources or a `DISPUTED`-free history.
 - Validators read the first 4,000 characters of each page; cite pages where the fact appears early. Light pages (plain text, docs files) are faster and less likely to time out.
 
+## Live proof (Bradbury)
+
+The challenge demo uses `demo/old-staking-note.txt`, a deliberately outdated test fixture in this repo (served by GitHub Pages). A claim backed by two copies of the official staking docs is TRUE; a challenge that adds the outdated note as a new source contradicts it, the verdict becomes DISPUTED, and the bond is refunded to the challenger.
+
+| Proof | Transaction |
+| --- | --- |
+| Claim checked against 2 sources | _fill in_ |
+| Challenge changed the verdict, 0.1 GEN refunded | _fill in_ |
+
 ## Deployment record
 
 | Item | Value |
 | --- | --- |
 | Network | Testnet Bradbury (chain 4221) |
-| Contract | _fill in after deploy_ |
-| Example claim | _fill in_ |
+| Contract | `0x94DE6E49047518008Fb97Ec6D01a49782b4a8C3E` |
+| Deploy tx | `0xec2bdd0f7010dd9f5775ed97ca4221a409f6338ef819aa10f4a15a89058236e5` |
+| Deploy result | ACCEPTED, validators AGREE, FINISHED_WITH_RETURN (13 Oct 2026) |
+| Explorer | https://explorer-bradbury.genlayer.com/address/0x94DE6E49047518008Fb97Ec6D01a49782b4a8C3E |
