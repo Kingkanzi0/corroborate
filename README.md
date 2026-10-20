@@ -92,8 +92,8 @@ The challenge demo uses `demo/old-staking-note.txt`, a deliberately outdated tes
 
 | Proof | Transaction |
 | --- | --- |
-| Claim #0 checked against 2 sources: both SUPPORTS, verdict TRUE | pending |
-| Challenge on claim #0: new source CONTRADICTS, verdict TRUE to DISPUTED, 0.10 GEN refunded | pending |
+| Claim #0 checked against 2 sources: both SUPPORTS, verdict TRUE | [0xe7be76db…05b0fd](https://explorer-bradbury.genlayer.com/tx/0xe7be76db305ba01842febe2e476e4960388c3a543737ebd92cf22ffd5305b0fd) |
+| Challenge on claim #0: new source CONTRADICTS, verdict TRUE to DISPUTED, 0.10 GEN refunded | [0xca622df6…269e57](https://explorer-bradbury.genlayer.com/tx/0xca622df6a32a3dec6004d15fa5223306ccc9cb5f74b6610ff592307d50269e57) |
 
 ## Deployment record
 
