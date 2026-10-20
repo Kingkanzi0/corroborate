@@ -329,6 +329,7 @@ input:focus, textarea:focus { border-color: var(--gold); outline: none; }
     <div class="dlg-body">
       <p id="chClaim" style="margin:0;font-weight:700"></p>
       <div><label for="chSource">New source on a website the claim does not use yet</label><input type="url" id="chSource" required placeholder="https://another-site.example/page"></div>
+      <button class="btn ghost" id="chExample" type="button" style="align-self:flex-start">Use the demo outdated note</button>
       <p class="hint">You post a 0.1 GEN bond. Validators read only your new source and recompute the verdict with the existing ones. If the verdict changes, your bond comes back. If it does not, the bond goes to the claim's author.</p>
       <div class="actions" style="justify-content:flex-start"><button class="btn" type="submit" value="default" id="chSubmit">Challenge for 0.1 GEN</button><button class="btn ghost" value="cancel" formnovalidate type="submit">Cancel</button></div>
     </div>
@@ -345,7 +346,7 @@ input:focus, textarea:focus { border-color: var(--gold); outline: none; }
 
 <script type="module">
 /* Configuration. Override with ?contract=0x…&network=studionet */
-const DEFAULT_CONTRACT = "0x94DE6E49047518008Fb97Ec6D01a49782b4a8C3E";
+const DEFAULT_CONTRACT = "0x87911fd52cAf6E6aDa2482D5e3238C443666d235";
 const DEFAULT_NETWORK = "testnetBradbury";
 const SDK_VERSION = "1.1.8";
 const params = new URLSearchParams(location.search);
@@ -733,6 +734,7 @@ async function onTxDone(j) {
 }
 
 $("cExample").addEventListener("click", () => { $("cClaim").value = EXAMPLE.claim; $("cSources").value = EXAMPLE.sources.join("\n"); });
+$("chExample").addEventListener("click", () => { $("chSource").value = "https://kingkanzi0.github.io/corroborate/demo/old-staking-note.txt"; });
 $("cSubmit").addEventListener("click", async () => {
   const claim = $("cClaim").value.trim();
   const sources = $("cSources").value.split(/[\n,]/).map((s) => s.trim()).filter(Boolean);
