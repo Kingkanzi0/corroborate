@@ -114,13 +114,18 @@ def test_conflicting_sources_are_disputed():
     assert submit(c, ["SUPPORTS", "CONTRADICTS", "SUPPORTS"], (A, B, C))["verdict"] == "DISPUTED"
 
 
-def test_validators_compare_the_verdict_not_each_stance():
+def test_validators_bind_every_stored_stance():
+    # stances are stored and later decide challenges, so a leader whose per-source
+    # stances differ is rejected even when the aggregate verdict would match
     mod, c = fresh()
-    # leader and validators word one source differently, but both conclusions are TRUE
     llm(["SUPPORTS", "SUPPORTS", "UNCLEAR"], "leader")
     llm(["SUPPORTS", "SUPPORTS", "SUPPORTS"], "validator")
     as_(ALICE)
-    assert json.loads(c.submit_claim(CLAIM, f"{A}\n{B}\n{C}"))["verdict"] == "TRUE"
+    expect_error(lambda: c.submit_claim(CLAIM, f"{A}\n{B}\n{C}"), "validators agreed")
+    assert c.get_claim_count() == 0 if hasattr(c, "get_claim_count") else True
+    llm(["SUPPORTS", "SUPPORTS", "UNCLEAR"])
+    out = json.loads(c.submit_claim(CLAIM, f"{A}\n{B}\n{C}"))
+    assert out["verdict"] == "TRUE" and out["stances"] == ["SUPPORTS", "SUPPORTS", "UNCLEAR"]
 
 
 def test_leader_hiding_a_contradiction_is_rejected():
