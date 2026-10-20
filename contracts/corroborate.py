@@ -129,9 +129,9 @@ def _agree_on_error(leader_res, rerun):
 
 def reach_consensus(claim, urls, fixed=()):
 	"""Run the check under consensus. `fixed` are stances already on record for
-	earlier sources (used by challenges). Validators accept the leader's result
-	when it leads to the same final verdict: per-source wording may differ, the
-	decision may not."""
+	earlier sources (used by challenges). Every per-source stance is stored and
+	later decides challenges and bond routing, so validators must agree on each
+	stance, not only on the aggregate verdict. Only the free-text note may differ."""
 	def leader_fn():
 		return judge_sources(claim, urls)
 
@@ -143,7 +143,7 @@ def reach_consensus(claim, urls, fixed=()):
 		if not isinstance(st, list) or len(st) != len(urls) or any(s not in STANCES for s in st):
 			return False
 		mine = leader_fn()["stances"]
-		return aggregate(list(fixed) + mine) == aggregate(list(fixed) + st)
+		return mine == st   # stored state is bound: every stance must match
 
 	return gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
 
