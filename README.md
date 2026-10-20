@@ -21,10 +21,10 @@ Many apps need one answer to "is this statement true right now?": prediction mar
 
 | Step | Evidence | Pattern | Validators agree on | Allowed to differ |
 | --- | --- | --- | --- | --- |
-| `submit_claim`, `refresh` | every source via `gl.nondet.web.render(mode="text")` | `gl.vm.run_nondet_unsafe(leader_fn, validator_fn)` | the **final verdict** from `aggregate()` | per-source wording, the note |
+| `submit_claim`, `refresh` | every source via `gl.nondet.web.render(mode="text")` | `gl.vm.run_nondet_unsafe(leader_fn, validator_fn)` | **every per-source stance** (and so the verdict) | the note |
 | `challenge` | the new source only | same | the final verdict computed from the stored stances plus the new one | same |
 
-- **Equivalence on the decision, not the wording.** Each validator re-reads the sources and computes its own stances, then accepts the leader's result only if both lead to the same verdict. Two honest models that phrase one source differently still agree; a leader that hides a contradicting source to turn `DISPUTED` into `TRUE` is rejected (see `test_leader_hiding_a_contradiction_is_rejected`).
+- **Every stored stance is bound by consensus.** Each validator re-reads the sources and computes its own stance per source, and accepts the leader's result only if every stance matches. The stances are stored and later decide challenges and bond routing, so they cannot be left to the leader alone (fixed after steward review: v1 compared only the aggregate verdict). The free-text note is not compared. A leader that hides a contradicting source is rejected (see `test_leader_hiding_a_contradiction_is_rejected` and `test_validators_bind_every_stored_stance`).
 - **A source that fails to load counts as UNCLEAR** instead of failing the whole check, so one slow site cannot block a claim. If no source loads, the error is `[TRANSIENT]` and validators agree on it.
 - Errors are classified `[EXPECTED]`, `[TRANSIENT]`, `[LLM_ERROR]`; LLM errors always disagree, forcing leader rotation.
 - Source text is wrapped in markers and the prompt treats it as data only (prompt-injection hardening). Stances are normalised against a fixed set.
@@ -79,28 +79,30 @@ Live: https://kingkanzi0.github.io/corroborate/frontend/
 python3 tests/test_corroborate.py
 ```
 
-16 offline tests cover: the aggregation table; distinct-domain and input rules; validators accepting different wording with the same verdict; a leader hiding a contradiction being rejected; unloadable sources counting as UNCLEAR; transient errors; wrong stance counts; challenges that refund or pay the author; challenge limits; refresh timing; `STALE` reporting; render settings. `tests/mock_genlayer.py` is a minimal SDK stand-in, so behaviour must also be confirmed on Bradbury.
+16 offline tests cover: the aggregation table; distinct-domain and input rules; validators rejecting a leader whose stored stances differ even when the verdict matches; a leader hiding a contradiction being rejected; unloadable sources counting as UNCLEAR; transient errors; wrong stance counts; challenges that refund or pay the author; challenge limits; refresh timing; `STALE` reporting; render settings. `tests/mock_genlayer.py` is a minimal SDK stand-in, so behaviour must also be confirmed on Bradbury.
 
 ## Limits
 
 - Sources on different domains are not guaranteed to be independent (one site may copy another). Consumers that need more can require claims with three sources or a `DISPUTED`-free history.
 - Validators read the first 4,000 characters of each page; cite pages where the fact appears early. Light pages (plain text, docs files) are faster and less likely to time out.
 
-## Live proof (Bradbury)
+## Live proof (Bradbury, v2 contract)
 
-The challenge demo uses `demo/old-staking-note.txt`, a deliberately outdated test fixture in this repo (served by GitHub Pages). A claim backed by two copies of the official staking docs is TRUE; a challenge that adds the outdated note as a new source contradicts it, the verdict becomes DISPUTED, and the bond is refunded to the challenger.
+The challenge demo uses `demo/old-staking-note.txt`, a deliberately outdated test fixture in this repo (served by GitHub Pages). A claim backed by two copies of the official staking docs is TRUE; a challenge that adds the outdated note as a new source contradicts it, the verdict becomes DISPUTED, and the bond is refunded to the challenger. The console has one-click buttons for both ("Load an example" and "Use the demo outdated note").
 
 | Proof | Transaction |
 | --- | --- |
-| Claim #0 checked against 2 sources: both SUPPORTS, verdict TRUE | [0x2e928d7e…9e84a5](https://explorer-bradbury.genlayer.com/tx/0x2e928d7ed0d592838594afab24be86f02b9f94f06ba4c9123f2f01aadd9e84a5) |
-| Challenge on claim #0: new source CONTRADICTS, verdict TRUE to DISPUTED, 0.10 GEN refunded by internal transfer | [0x3b3bac86…2b221b](https://explorer-bradbury.genlayer.com/tx/0x3b3bac8635916832dffe53e4b94b885a13b33420432314d1509ce090452b221b) |
+| Claim #0 checked against 2 sources: both SUPPORTS, verdict TRUE | pending |
+| Challenge on claim #0: new source CONTRADICTS, verdict TRUE to DISPUTED, 0.10 GEN refunded | pending |
 
 ## Deployment record
 
 | Item | Value |
 | --- | --- |
 | Network | Testnet Bradbury (chain 4221) |
-| Contract | `0x94DE6E49047518008Fb97Ec6D01a49782b4a8C3E` |
-| Deploy tx | `0xec2bdd0f7010dd9f5775ed97ca4221a409f6338ef819aa10f4a15a89058236e5` |
-| Deploy result | ACCEPTED, validators AGREE, FINISHED_WITH_RETURN (13 Oct 2026) |
-| Explorer | https://explorer-bradbury.genlayer.com/address/0x94DE6E49047518008Fb97Ec6D01a49782b4a8C3E |
+| Contract (v2, every stance bound by consensus) | `0x87911fd52cAf6E6aDa2482D5e3238C443666d235` |
+| Deploy tx | [0x2f911903…869d16](https://explorer-bradbury.genlayer.com/tx/0x2f911903ad3c1640c3eb06fa18556074af9233f9dba810508bfee1525b869d16) |
+| Deploy result | ACCEPTED, validators AGREE, FINISHED_WITH_RETURN (20 Oct 2026) |
+| Explorer | https://explorer-bradbury.genlayer.com/address/0x87911fd52cAf6E6aDa2482D5e3238C443666d235 |
+
+v1 (`0x94DE6E49047518008Fb97Ec6D01a49782b4a8C3E`, 13 Oct 2026) compared only the aggregate verdict between validators and is superseded. Its proofs: claim [0x2e928d7e…9e84a5](https://explorer-bradbury.genlayer.com/tx/0x2e928d7ed0d592838594afab24be86f02b9f94f06ba4c9123f2f01aadd9e84a5), challenge [0x3b3bac86…2b221b](https://explorer-bradbury.genlayer.com/tx/0x3b3bac8635916832dffe53e4b94b885a13b33420432314d1509ce090452b221b).
